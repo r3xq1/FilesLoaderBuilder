@@ -9,9 +9,8 @@
 + Убирает уведомления при запуске ( файл скачан из интернета )
 
 ### Поддержка софта
-Telegram: @r3xq1
+Telegram: @r3xq1_dev
 
 ### Поддержка кодера
-BTC: `1NNsV99rZRBdbXVBYkM9RS3iBL85XAgwTW`\
-QIWI Card: `4890494738226893`\
+BTC: `bc1qlrf2rvkgcy9fcwn2tu7hrkvu8e8a4374kzaz3e`\
 ❗️ Проверяйте все данные перед тем как захотите помочь денюшкой
